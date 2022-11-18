@@ -123,6 +123,10 @@ class TestAccountService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+        """Another 415 error test"""
+        resp = self.client.post(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
     # ADD YOUR TEST CASES HERE ...
 
     def test_read_account(self):
@@ -198,3 +202,9 @@ class TestAccountService(TestCase):
         """It should not allow an illegal method call (put)"""
         resp = self.client.put(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_unexpected_server_error_handler(self):
+        """It should catch an error related to unexpected token"""
+        resp = self.client(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
