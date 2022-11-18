@@ -125,7 +125,7 @@ class TestAccountService(TestCase):
 
     # ADD YOUR TEST CASES HERE ...
 
-    def test_get_account(self):
+    def test_read_account(self):
         """It should Read a single Account"""
         account = self._create_accounts(1)[0]
         resp = self.client.get(
@@ -135,7 +135,7 @@ class TestAccountService(TestCase):
         data = resp.get_json()
         self.assertEqual(data["name"], account.name)
 
-    def test_account_not_found(self):
+    def test_read_account_not_found(self):
         """It is supposed to return a status 404 when the account is not found"""
         resp = self.client.get(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
@@ -166,9 +166,39 @@ class TestAccountService(TestCase):
         updated_account = resp.get_json()
         self.assertEqual(updated_account["name"], "Something Known")
 
+    def test_update_account_not_found(self):
+        """It should return 404 when trying to update a nonexistent account"""
+        # create an Account to update
+        test_account = AccountFactory()
+        resp = self.client.post(BASE_URL, json=test_account.serialize())
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # update the account
+        new_account = resp.get_json()
+        new_account["nonexistent"] = "Something Known"
+        resp = self.client.get(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        resp = self.client.put(f"{BASE_URL}/{new_account['id']}", json=new_account)
+        updated_account = resp.get_json()
+        self.assertNotEqual(updated_account["name"], "Something Known")
+
     def test_delete_account(self):
         """It should Delete an Account"""
         account = self._create_accounts(1)[0]
         resp = self.client.delete(f"{BASE_URL}/{account.id}")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+#    def test_delete_no_content(self):
+#        """It is supposed to return a status 405 deleting is not allowed"""
+#        resp = self.client.get(f"{BASE_URL}/0")
+#        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
     
+    def test_method_not_allowed_1(self):
+        """It should not allow an illegal method call (delete)"""
+        resp = self.client.delete(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_method_not_allowed_2(self):
+        """It should not allow an illegal method call (put)"""
+        resp = self.client.put(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
