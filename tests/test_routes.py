@@ -210,7 +210,7 @@ class TestAccountService(TestCase):
 
     def test_security_header_check(self):
         """Expected headers for security check"""
-        resp = self.client.get("/", environ_overrides= HTTPS_ENVIRON)
+        resp = self.client.get("/", environ_overrides=HTTPS_ENVIRON)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         headers = {
             'X-Frame-Options': 'SAMEORIGIN',
