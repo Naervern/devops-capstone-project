@@ -36,6 +36,7 @@ class TestAccountService(TestCase):
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.logger.setLevel(logging.CRITICAL)
         init_db(app)
+        talisman.force_https = False
 
     @classmethod
     def tearDownClass(cls):
@@ -51,11 +52,6 @@ class TestAccountService(TestCase):
     def tearDown(self):
         """Runs once after each test case"""
         db.session.remove()
-
-    @classmethod
-    def setUpClass(cls):
-        """Run once before all tests"""
-        talisman.force_https = False
 
     ######################################################################
     #  H E L P E R   M E T H O D S
@@ -159,7 +155,6 @@ class TestAccountService(TestCase):
         data = resp.get_json()
         self.assertEqual(len(data), 5)
 
-    
     def test_update_account(self):
         """It should Update an existing Account"""
         # create an Account to update
@@ -177,17 +172,15 @@ class TestAccountService(TestCase):
         updated_account = resp.get_json()
         self.assertEqual(updated_account["name"], "Something Known")
 
-
     def test_update_account_not_found(self):
         """It should return 404 when trying to update a nonexistent account"""
-        
+
         account = self._create_accounts(1)[0]
         resp = self.client.get(f"{BASE_URL}/0")
         account = resp.get_json()
         resp = self.client.put(f"{BASE_URL}/0", json=account)
-        updated_account = resp.get_json()
+#        updated_account = resp.get_json()
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
-
 
     def test_delete_account(self):
         """It should Delete an Account"""
@@ -199,7 +192,7 @@ class TestAccountService(TestCase):
 #        """It is supposed to return a status 405 deleting is not allowed"""
 #        resp = self.client.get(f"{BASE_URL}/0")
 #        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+
     def test_method_not_allowed_1(self):
         """It should not allow an illegal method call (delete)"""
         resp = self.client.delete(BASE_URL)
